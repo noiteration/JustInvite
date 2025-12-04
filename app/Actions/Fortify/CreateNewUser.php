@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
+use App\Models\Invitation;
+use Illuminate\Validation\ValidationException;
+
 class CreateNewUser implements CreatesNewUsers
 {
     use PasswordValidationRules;
@@ -29,6 +32,19 @@ class CreateNewUser implements CreatesNewUsers
             ],
             'password' => $this->passwordRules(),
         ])->validate();
+
+        $invitation = Invitation::where('token', $input['token'])->first();
+
+
+        if (!$invitation || !$invitation->isValid() || $invitation->email !== $input['email']) {
+            throw ValidationException::withMessages([
+                'token' => ['Invalid or expired invitation token.']
+            ]);
+        }
+
+        $invitation->update([
+            'accepted_at' => now()
+        ]);
 
         return User::create([
             'name' => $input['name'],

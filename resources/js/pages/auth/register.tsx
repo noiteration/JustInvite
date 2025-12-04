@@ -1,6 +1,6 @@
 import { login } from '@/routes';
 import { store } from '@/routes/register';
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, usePage } from '@inertiajs/react';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
@@ -11,6 +11,7 @@ import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 
 export default function Register() {
+    const { token } = usePage().props;
     return (
         <AuthLayout
             title="Create an account"
@@ -87,6 +88,24 @@ export default function Register() {
                                 />
                                 <InputError
                                     message={errors.password_confirmation}
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="token">
+                                    Token
+                                </Label>
+                                <Input
+                                    id="token"
+                                    type="text"
+                                    required
+                                    tabIndex={4}
+                                    name="token"
+                                    value={String(token ?? '')}
+                                    readOnly
+                                />
+                                <InputError
+                                    message={errors.token}
                                 />
                             </div>
 

@@ -13,6 +13,8 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 
+use App\Models\Invitation;
+
 class FortifyServiceProvider extends ServiceProvider
 {
     /**
@@ -47,30 +49,42 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function configureViews(): void
     {
-        Fortify::loginView(fn (Request $request) => Inertia::render('auth/login', [
+        Fortify::loginView(fn(Request $request) => Inertia::render('auth/login', [
             'canResetPassword' => Features::enabled(Features::resetPasswords()),
             'canRegister' => Features::enabled(Features::registration()),
             'status' => $request->session()->get('status'),
         ]));
 
-        Fortify::resetPasswordView(fn (Request $request) => Inertia::render('auth/reset-password', [
+        Fortify::resetPasswordView(fn(Request $request) => Inertia::render('auth/reset-password', [
             'email' => $request->email,
             'token' => $request->route('token'),
         ]));
 
-        Fortify::requestPasswordResetLinkView(fn (Request $request) => Inertia::render('auth/forgot-password', [
+        Fortify::requestPasswordResetLinkView(fn(Request $request) => Inertia::render('auth/forgot-password', [
             'status' => $request->session()->get('status'),
         ]));
 
-        Fortify::verifyEmailView(fn (Request $request) => Inertia::render('auth/verify-email', [
+        Fortify::verifyEmailView(fn(Request $request) => Inertia::render('auth/verify-email', [
             'status' => $request->session()->get('status'),
         ]));
 
-        Fortify::registerView(fn () => Inertia::render('auth/register'));
+        Fortify::registerView(function () {
+            $token = request('token');
 
-        Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
+            abort_if(!$token, 403, 'Invitation required.');
 
-        Fortify::confirmPasswordView(fn () => Inertia::render('auth/confirm-password'));
+            $invitation = Invitation::where('token', $token)->first();
+
+            abort_if(!$invitation || !$invitation->isValid(), 403, 'Invalid or expired invitation.');
+
+            return Inertia::render('auth/register', [
+                'token' => request('token')
+            ]);
+        });
+
+        Fortify::twoFactorChallengeView(fn() => Inertia::render('auth/two-factor-challenge'));
+
+        Fortify::confirmPasswordView(fn() => Inertia::render('auth/confirm-password'));
     }
 
     /**
@@ -83,7 +97,7 @@ class FortifyServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
+            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())) . '|' . $request->ip());
 
             return Limit::perMinute(5)->by($throttleKey);
         });

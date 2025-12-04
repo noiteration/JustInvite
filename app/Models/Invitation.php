@@ -14,6 +14,17 @@ class Invitation extends Model
         'expires_at'
     ];
 
+    public function inviter()
+    {
+        return $this->belongsTo(User::class, 'invited_by');
+    }
+
+    public function isValid(): bool
+    {
+        return !$this->accepted_at &&
+            (!$this->expires_at || now()->lessThan($this->expires_at));
+    }
+
     public static function createInvite(string $email, ?int $inviterId = null): self
     {
         return self::create([
