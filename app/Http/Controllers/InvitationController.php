@@ -53,8 +53,8 @@ class InvitationController extends Controller
             auth()->id()
         );
 
-        // Send email to the invited user prompting registration
-        Mail::to($request->email)->send(new InviteEmail($invitation->token));
+        // Queue email to the invited user prompting registration
+        Mail::to($request->email)->queue(new InviteEmail($invitation->token));
 
         // Return success response
         return response()->json([
