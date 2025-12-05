@@ -30,12 +30,13 @@ class InvitationController extends Controller
      */
     public function store(Request $request)
     {
+        // Check email is in email format
         $request->validate([
             'email' => 'required|email'
         ]);
 
+        // Check whether the user is alreadu invited
         $existing = Invitation::where('email', $request->email)->first();
-
         if ($existing) {
             if ($existing->isValid()) {
                 return response()->json([
@@ -46,13 +47,16 @@ class InvitationController extends Controller
             $existing->delete();
         }
 
+        // Create record in database
         $invitation = Invitation::createInvite(
             $request->email,
             auth()->id()
         );
 
+        // Send email to the invited user prompting registration
         Mail::to($request->email)->send(new InviteEmail($invitation->token));
 
+        // Return success response
         return response()->json([
             'message' => 'Sent Invitation Successfully',
             'token' => $invitation->token
