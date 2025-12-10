@@ -21,6 +21,7 @@ export default function Dashboard() {
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
     interface LaravelWindow extends Window {
         Laravel?: {
@@ -37,7 +38,7 @@ export default function Dashboard() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': (window as LaravelWindow).Laravel?.csrfToken || '',
+                    'X-CSRF-TOKEN': csrfToken || '',
                 },
                 body: JSON.stringify({ email }),
             });
