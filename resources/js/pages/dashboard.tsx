@@ -22,12 +22,6 @@ export default function Dashboard() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-
-    interface LaravelWindow extends Window {
-        Laravel?: {
-            csrfToken?: string;
-        };
-    }
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setProcessing(true);
