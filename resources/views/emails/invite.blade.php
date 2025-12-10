@@ -8,7 +8,8 @@
 <body>
     <h1>Welcome</h1>
     <p>You have been invited to JustInvite.</p>
-    <a href={{ $url }}>Click here to register.</a>
+    <p><a href={{ $url }}>Click here to register.</a> or scan the QR code below</p>
+    <img src="{{ $qrcode }}">
 </body>
 
 </html>

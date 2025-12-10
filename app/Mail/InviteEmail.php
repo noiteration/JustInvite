@@ -41,10 +41,12 @@ class InviteEmail extends Mailable implements ShouldQueue
     public function content(): Content
     {
         $url = env('APP_URL') . '/register?token=' . $this->data;
+        $qrcode = app('App\Services\QrCodeService')->generate($url);
         return new Content(
             view: 'emails.invite',
             with: [
                 'url' => $url,
+                'qrcode' => "data:image/svg+xml;base64," . base64_encode($qrcode),
             ],
         );
     }
